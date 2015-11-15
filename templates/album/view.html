@@ -1,0 +1,72 @@
+<div class="row">
+	<div class="col-md-12">
+		<div class="col-md-3">
+			<img class="img-responsive img-thumbnail" ng-src="{{album.images.length > 0 ? album.images[0].url : 'http://placehold.it/300x300'}}" />
+		</div>
+		<div class="col-md-9">
+			<h3>{{album.name}}</h3>
+			<h4>by&nbsp;
+				<span ng-repeat="artist in album.artists">
+					<a ui-sref="artist({artistId: artist.id})">{{artist.name}}</a>{{($index+1) != album.artists.length ? ', ' : ''}}
+				</span></a>
+			</h4>
+			<hr />
+			<p>{{album.release_date | date: 'dd MMM yyyy'}}</p>
+			<p>Popularity:</p>
+			<div class="progress custom-progress">
+				<div class="progress-bar" role="progressbar" aria-valuenow="{{album.popularity}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{album.popularity}}%;">
+					{{album.popularity}}%
+				</div>
+			</div>
+			<br />
+			<p><a class="btn btn-success btn-lg" href="{{album.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{album.external_urls.spotify}}" target="_blank">Open with Spotify Open</a></p>
+		</div>
+	</div>
+	<div class="col-md-12" style="padding-top: 15px;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">{{album.tracks.total}} Tracks</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table">
+					<thead>
+						<tr>
+							<th class="text-center" width="2%">Select</th>
+							<th class="text-center" width="5%">#</th>
+							<th width="40%">Song</th>
+							<th width="35%">Artist</th>
+							<th width="10%">Duration</th>
+							<th class="text-center" width="8%">Preview</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="track in album.tracks.items">
+							<td class="text-center"><input type="checkbox" /></td>
+							<td class="text-center">CD{{track.disc_number}}/{{track.track_number}}</td>
+							<td><a ui-sref="track({trackId: track.id})">{{track.name}}</a></td>
+							<td>
+								<span ng-repeat="artist in track.artists">
+									<a ui-sref="artist({artistId: artist.id})">{{artist.name}}</a>{{($index+1) != track.artists.length ? ', ' : ''}}
+								</span>
+							</td>
+							<td>{{getDuration(track.duration_ms)}}</td>
+							<td class="text-center">
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl($index,0)">
+									<i class="fa fa-minus fa-lg"></i>
+								</a>
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="playPreview($index)">
+									<i id="controls-{{$index}}" class="fa fa-play fa-lg"></i>
+								</a>
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl($index,1)">
+									<i class="fa fa-plus fa-lg"></i>
+								</a>
+								<i ng-if="getPreviewUrl(track.preview_url) === null" id="controls-{{$index}}" class="fa fa-times fa-lg"></i>
+								<audio ng-if="getPreviewUrl(track.preview_url) !== null" id="track-{{$index}}" ng-src="{{getPreviewUrl(track.preview_url)}}"></audio>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>

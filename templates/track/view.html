@@ -1,0 +1,44 @@
+<div class="row">
+	<div class="col-md-12">
+		<div class="col-md-3">
+			<div id="track-preview" class="track-preview">
+				<div id="controls" class="controls text-center">
+					<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl(0,0)">
+						<i class="fa fa-minus fa-2x"></i>
+					</a>
+					<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="playPreview(0)">
+						<i id="controls-0" class="fa fa-play fa-3x"></i>
+					</a>
+					<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl(0,1)">
+						<i class="fa fa-plus fa-2x"></i>
+					</a>
+					<i ng-if="getPreviewUrl(track.preview_url) === null" id="controls-0" class="fa fa-times fa-3x"></i>
+					<audio ng-if="getPreviewUrl(track.preview_url) !== null" id="track-0" ng-src="{{getPreviewUrl(track.preview_url)}}"></audio>
+				</div>
+				<div class="album-img">
+					<img class="img-responsive img-thumbnail" ng-src="{{album.images.length > 0 ? album.images[0].url : 'http://placehold.it/300x300'}}" />
+				</div>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<h3>{{track.name}}</h3>
+			<h4>
+				<span ng-repeat="artist in album.artists">
+					<a ui-sref="artist({artistId: artist.id})" href>{{artist.name}}</a>{{($index+1) != album.artists.length ? ', ' : ''}}
+				</span></a>
+			</h4>
+			<h4><a ui-sref="album({albumId: album.id})" href>{{album.name}}</a> CD{{track.disc_number}}/{{track.track_number}}</h4>
+			<hr />
+			<p>{{album.release_date | date: 'dd MMM yyyy'}}</p>
+			<p>Duration: {{getDuration(track.duration_ms)}}</p>
+			<p>Popularity:</p>
+			<div class="progress custom-progress">
+				<div class="progress-bar" role="progressbar" aria-valuenow="{{album.popularity}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{album.popularity}}%;">
+					{{album.popularity}}%
+				</div>
+			</div>
+			<br />
+			<p><a class="btn btn-success btn-lg" href="{{album.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{album.external_urls.spotify}}" target="_blank">Open with Spotify Open</a></p>
+		</div>
+	</div>
+</div>

@@ -1,6 +1,6 @@
 <div class="row">
 	<div class="col-md-3">
-		<img class="img-thumbnail" ng-src="{{playlist.images[0].url.length > 32 ? playlist.images[0].url : 'http://placehold.it/300x300'}}" />
+		<img class="img-responsive img-thumbnail" ng-src="{{playlist.images[0].url.length > 32 ? playlist.images[0].url : 'http://placehold.it/300x300'}}" />
 	</div>
 	<div class="col-md-9">
 		<h3>{{playlist.name}}</h3>
@@ -16,10 +16,11 @@
 			<thead>
 				<tr>
 					<th class="text-center" width="2%">Select</th>
-					<th width="40%">Song</th>
+					<th width="30%">Song</th>
 					<th width="30%">Artist</th>
-					<th width="20%">Added</th>
-					<th class="text-center" width="8%">Action</th>
+					<th width="15%">Album</th>
+					<th width="15%">Added</th>
+					<th class="text-center" width="8%">Preview</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -28,25 +29,26 @@
 				</tr>
 				<tr ng-repeat="track in filteredTracks.items">
 					<td class="text-center"><input type="checkbox" /></td>
-					<td><a href="{{track.track.uri}}">{{track.track.name}}</a></td>
+					<td><a ui-sref="track({trackId: track.track.id})">{{track.track.name}}</a></td>
 					<td>
 						<span ng-repeat="artist in track.track.artists">
-							<a href="{{artist.uri}}">{{artist.name}}</a>{{($index+1) != track.track.artists.length ? ', ' : ''}}
+							<a ui-sref="artist({artistId: artist.id})">{{artist.name}}</a>{{($index+1) != track.track.artists.length ? ', ' : ''}}
 						</span>
 					</td>
+					<td><a ui-sref="album({albumId: track.track.album.id})">{{track.track.album.name}}</a></td>
 					<td>{{track.added_at | date: 'dd MMM yyyy - HH:mm'}}</td>
 					<td class="text-center">
-						<a href ng-if="getPreviewUrl($index) !== null" ng-click="volumeControl($index,0)">
+						<a href ng-if="getPreviewUrl(track.track.preview_url) !== null" ng-click="volumeControl($index,0)">
 							<i class="fa fa-minus fa-lg"></i>
 						</a>
-						<a href ng-if="getPreviewUrl($index) !== null" ng-click="playPreview($index)">
+						<a href ng-if="getPreviewUrl(track.track.preview_url) !== null" ng-click="playPreview($index)">
 							<i id="controls-{{$index}}" class="fa fa-play fa-lg"></i>
 						</a>
-						<a href ng-if="getPreviewUrl($index) !== null" ng-click="volumeControl($index,1)">
+						<a href ng-if="getPreviewUrl(track.track.preview_url) !== null" ng-click="volumeControl($index,1)">
 							<i class="fa fa-plus fa-lg"></i>
 						</a>
-						<i ng-if="getPreviewUrl($index) === null" id="controls-{{$index}}" class="fa fa-times fa-lg"></i>
-						<audio ng-if="getPreviewUrl($index) !== null" id="track-{{$index}}" ng-src="{{getPreviewUrl($index)}}"></audio>
+						<i ng-if="getPreviewUrl(track.track.preview_url) === null" id="controls-{{$index}}" class="fa fa-times fa-lg"></i>
+						<audio ng-if="getPreviewUrl(track.track.preview_url) !== null" id="track-{{$index}}" ng-src="{{getPreviewUrl(track.track.preview_url)}}"></audio>
 					</td>
 				</tr>
 			</tbody>

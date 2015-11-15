@@ -10,7 +10,11 @@ app.config(['$stateProvider', '$urlRouterProvider', '$compileProvider', 'Spotify
 	$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension|spotify):/);
 
 	SpotifyProvider.setClientId('e31281fecafe435dae4d885c301de581');
-	SpotifyProvider.setRedirectUri('http://jbienkowski311.github.io/spatify/signin.html');
+	if(window.location.hostname == "localhost"){
+		SpotifyProvider.setRedirectUri('http://localhost/spotify1/signin.html');
+	}else{
+		SpotifyProvider.setRedirectUri('http://jbienkowski311.github.io/spatify/signin.html');
+	}
 	SpotifyProvider.setScope('user-read-email user-read-private playlist-read-private playlist-modify-private playlist-modify-public user-library-read user-library-modify');
 	if($cookies.get('spotify-token') != 'undefined'){
 		SpotifyProvider.setAuthToken($cookies.get('spotify-token'));
@@ -50,6 +54,16 @@ app.config(['$stateProvider', '$urlRouterProvider', '$compileProvider', 'Spotify
 			url: '/artist/{artistId}',
 			templateUrl: 'templates/artist/view.html',
 			controller: 'artistCtrl'
+		})
+		.state('album', {
+			url: '/album/{albumId}',
+			templateUrl: 'templates/album/view.html',
+			controller: 'albumCtrl'
+		})
+		.state('track', {
+			url: '/track/{trackId}',
+			templateUrl: 'templates/track/view.html',
+			controller: 'trackCtrl'
 		})
 		.state('search', {
 			url: '/search?{query}&{filter}',
@@ -138,13 +152,12 @@ app.controller('searchCtrl', ['$scope', '$state', function($scope, $state){
 	};
 }]);
 
-app.controller('searchResultCtrl', ['$scope', '$state', '$stateParams', 'Spotify', function($scope, $state, $stateParams, Spotify){
+app.controller('searchResultCtrl', ['$scope', '$sce', '$state', '$stateParams', 'Spotify', 'trackPreviewService', function($scope, $sce, $state, $stateParams, Spotify, trackPreviewService){
 	$scope.tabs = {albums: {disabled: true, total: 0}, artists: {disabled: true, total: 0}, tracks: {disabled: true, total: 0}, playlists: {disabled: true, total: 0}};
 	if($stateParams.filter === 'artist' || $stateParams.filter === 'album' || $stateParams.filter === 'track' || $stateParams.filter === 'playlist'){
 		Spotify.search($stateParams.query.replace(' ', '+'), $stateParams.filter, {offset: 0, limit: 50}).then(function(data){
-			$state.current.data.returnData = data;
+			$scope.returnData = data;
 			console.log(data);
-			$scope.returnData = $state.current.data.returnData;
 			$scope.tabs[$stateParams.filter+'s'].disabled = false;
 			$scope.tabs[$stateParams.filter+'s'].active = true;
 			$scope.tabs[$stateParams.filter+'s'].total = $scope.returnData[$stateParams.filter+'s'].total;
@@ -155,13 +168,26 @@ app.controller('searchResultCtrl', ['$scope', '$state', '$stateParams', 'Spotify
 		});
 	}else if($stateParams.filter === 'all'){
 		Spotify.search($stateParams.query.replace(' ', '+'), 'artist,album,track,playlist', {offset: 0, limit: 50}).then(function(data){
-			$state.current.data.returnData = data;
+			$scope.returnData = data;
 			console.log(data);
-			$scope.returnData = $state.current.data.returnData;
 			$scope.tabs = {albums: {disabled: false, total: $scope.returnData['albums'].total}, artists: {active: true, disabled: false, total: $scope.returnData['artists'].total}, tracks: {disabled: false, total: $scope.returnData['tracks'].total}, playlists: {disabled: false, total: $scope.returnData['playlists'].total}};
 			$state.get('playlist').data.searchData = $scope.returnData['playlists'];
 			$state.get('playlist').data.searchData.empty = false;
 		});
+	}
+
+	if($stateParams.filter === 'track' || $stateParams.filter === 'all'){
+		$scope.playPreview = function(index){
+			trackPreviewService.playPreview(index);
+		};
+
+		$scope.volumeControl = function(index,sw){
+			trackPreviewService.volumeControl(index,sw);
+		};
+
+		$scope.getPreviewUrl = function(url){
+			return trackPreviewService.getPreviewUrl(url);
+		};
 	}
 }]);
 
@@ -179,10 +205,9 @@ app.controller('userPlaylistsCtrl', ['$scope', 'Spotify', 'userService', 'playli
 	}
 }]);
 
-app.controller('playlistCtrl', ['$scope', '$state', '$sce', '$cookies', '$stateParams', 'Spotify', 'playlistService', 'tracksService', function($scope, $state, $sce, $cookies, $stateParams, Spotify, playlistService, tracksService){
+app.controller('playlistCtrl', ['$scope', '$sce', '$state', '$cookies', '$stateParams', 'Spotify', 'playlistService', 'tracksService', 'trackPreviewService', function($scope, $sce, $state, $cookies, $stateParams, Spotify, playlistService, tracksService, trackPreviewService){
 	var playlists = playlistService.getPlaylists();
 
-	$scope.isPlaying = false;
 	$scope.ready = false;
 	$scope.currentPage = 1;
 
@@ -220,36 +245,15 @@ app.controller('playlistCtrl', ['$scope', '$state', '$sce', '$cookies', '$stateP
 	}
 
 	$scope.playPreview = function(index){
-		var track = document.getElementById('track-'+index);
-		var controls = angular.element(document.getElementById('controls-'+index));
-		if(!$scope.isPlaying){
-			track.volume = 0.5;
-			track.play();
-			controls.removeClass('fa-play').addClass('fa-pause');
-			$scope.isPlaying = true;
-			angular.element(track).bind('ended', function(){
-				controls.removeClass('fa-pause').addClass('fa-play');
-				$scope.isPlaying = false;
-			});
-		}else{
-			track.pause();
-			controls.removeClass('fa-pause').addClass('fa-play');
-			$scope.isPlaying = false;
-		}
+		trackPreviewService.playPreview(index);
 	};
 
-	$scope.volumeControl = function(index, sw){
-		//sw=0 0.1 down
-		//sw=1 0.1 up
-		if(sw){
-			document.getElementById('track-'+index).volume += 0.1;
-		}else{
-			document.getElementById('track-'+index).volume -= 0.1;
-		}
+	$scope.volumeControl = function(index,sw){
+		trackPreviewService.volumeControl(index,sw);
 	};
 
-	$scope.getPreviewUrl = function(index){
-		return $sce.trustAsResourceUrl($scope.filteredTracks.items[index].track.preview_url);
+	$scope.getPreviewUrl = function(url){
+		return trackPreviewService.getPreviewUrl(url);
 	};
 
 	$scope.$watch("currentPage", function(){
@@ -259,7 +263,7 @@ app.controller('playlistCtrl', ['$scope', '$state', '$sce', '$cookies', '$stateP
 	});
 }]);
 
-app.controller('artistCtrl', ['$scope', '$state', '$stateParams', '$uibModal', 'Spotify', function($scope, $state, $stateParams, $uibModal, Spotify){
+app.controller('artistCtrl', ['$scope', '$sce', '$state', '$stateParams', '$uibModal', 'Spotify', 'trackPreviewService', function($scope, $sce, $state, $stateParams, $uibModal, Spotify, trackPreviewService){
 	if($stateParams.artistId === ""){
 		$state.go('start');
 	}
@@ -268,6 +272,7 @@ app.controller('artistCtrl', ['$scope', '$state', '$stateParams', '$uibModal', '
 		$scope.artist = data;
 		console.log(data);
 	});
+
 	Spotify.getCurrentUser().then(function(data){
 		Spotify.getRelatedArtists($stateParams.artistId).then(function(data){
 			$scope.relatedArtists = data;
@@ -288,16 +293,112 @@ app.controller('artistCtrl', ['$scope', '$state', '$stateParams', '$uibModal', '
 		});
 		Spotify.getArtistTopTracks($stateParams.artistId, data.country).then(function(data){
 			$scope.topTracks = data;
+			var topTracksAlbums = [];
+			for(i=0; i<data.tracks.length; i++){
+				topTracksAlbums.push(data.tracks[i].album.id);
+			}
+			Spotify.getAlbums(topTracksAlbums).then(function(data){
+				$scope.topTracksAlbumsInfo = [];
+				for(i=0; i<data.albums.length; i++){
+					if(data.albums[i].images.length > 0){
+						var html = '<img src="' + data.albums[i].images[0].url + '" class="img-thumbnail" />';
+					}else{
+						var html = '<img src="http://placehold.it/300x300" class="img-thumbnail" />';
+					}
+					html = $sce.trustAsHtml(html);
+					$scope.topTracksAlbumsInfo.push(html);
+				}
+				console.log(data);
+			});
 			console.log(data);
 		});
-		Spotify.getArtistAlbums($stateParams.artistId).then(function(data){
+		Spotify.getArtistAlbums($stateParams.artistId, { album_type: 'album,single', country: data.country, limit: 12 }).then(function(data){
 			$scope.albums = data;
 			console.log(data);
 		});
 	});
+
+	$scope.playPreview = function(index){
+		trackPreviewService.playPreview(index);
+	};
+
+	$scope.volumeControl = function(index,sw){
+		trackPreviewService.volumeControl(index,sw);
+	};
+
+	$scope.getPreviewUrl = function(url){
+		return trackPreviewService.getPreviewUrl(url);
+	};
 }]);
 
-app.controller('savedTracksCtrl', ['$scope', 'Spotify', function($scope, Spotify){
+app.controller('albumCtrl', ['$scope', '$state', '$stateParams', 'Spotify', 'trackPreviewService', function($scope, $state, $stateParams, Spotify, trackPreviewService){
+	if($stateParams.albumId === ""){
+		$state.go('start');
+	}
+
+	Spotify.getAlbum($stateParams.albumId).then(function(data){
+		$scope.album = data;
+		console.log(data);
+	});
+
+	$scope.getDuration = function(ms){
+		var sec = parseInt(ms/1000, 10);
+		var min = parseInt(sec/60, 10);
+		sec = sec%60;
+		sec = sec < 10 ? '0' + sec : sec;
+		return min + ':' + sec;
+	};
+
+	$scope.playPreview = function(index){
+		trackPreviewService.playPreview(index);
+	};
+
+	$scope.volumeControl = function(index,sw){
+		trackPreviewService.volumeControl(index,sw);
+	};
+
+	$scope.getPreviewUrl = function(url){
+		return trackPreviewService.getPreviewUrl(url);
+	};
+}]);
+
+app.controller('trackCtrl', ['$scope', '$state', '$stateParams', 'Spotify', 'trackPreviewService', function($scope, $state, $stateParams, Spotify, trackPreviewService){
+	if($stateParams.trackId === ""){
+		$state.go('start');
+	}
+
+	Spotify.getTrack($stateParams.trackId).then(function(data){
+		$scope.track = data;
+		console.log(data);
+		Spotify.getAlbum(data.album.id).then(function(data){
+			$scope.album = data;
+			console.log(data);
+			var src = data.images.length > 0 ? data.images[0].url : 'http://placehold.it/300x300';
+		});
+	});
+
+	$scope.getDuration = function(ms){
+		var sec = parseInt(ms/1000, 10);
+		var min = parseInt(sec/60, 10);
+		sec = sec%60;
+		sec = sec < 10 ? '0' + sec : sec;
+		return min + ':' + sec;
+	};
+
+	$scope.playPreview = function(index){
+		trackPreviewService.playPreview(index);
+	};
+
+	$scope.volumeControl = function(index,sw){
+		trackPreviewService.volumeControl(index,sw);
+	};
+
+	$scope.getPreviewUrl = function(url){
+		return trackPreviewService.getPreviewUrl(url);
+	};
+}]);
+
+app.controller('savedTracksCtrl', ['$scope', 'Spotify', 'trackPreviewService', function($scope, Spotify, trackPreviewService){
 	Spotify.getCurrentUser().then(function(data){
 		$scope.userData = data;
 		console.log(data);
@@ -308,6 +409,17 @@ app.controller('savedTracksCtrl', ['$scope', 'Spotify', function($scope, Spotify
 		$scope.savedTracks = data;
 		console.log(data);
 		angular.element('#loading').css('display', 'none');
+		$scope.playPreview = function(index){
+			trackPreviewService.playPreview(index);
+		};
+
+		$scope.volumeControl = function(index,sw){
+			trackPreviewService.volumeControl(index,sw);
+		};
+
+		$scope.getPreviewUrl = function(url){
+			return trackPreviewService.getPreviewUrl(url);
+		};
 	});
 }]);
 
@@ -355,9 +467,54 @@ app.service('playlistService', function(){
 	};
 });
 
+app.service('trackPreviewService', ['$sce', function($sce){
+	this.isPlaying = false;
+
+	this.playPreview = function(index){
+		var track = document.getElementById('track-'+index);
+		var controls = angular.element(document.getElementById('controls-'+index));
+		if(!this.isPlaying){
+			track.volume = 0.5;
+			track.play();
+			controls.removeClass('fa-play').addClass('fa-pause');
+			this.isPlaying = !this.isPlaying;
+			angular.element(track).bind('ended', function(){
+				controls.removeClass('fa-pause').addClass('fa-play');
+				this.isPlaying = !this.isPlaying;
+			});
+		}else{
+			track.pause();
+			controls.removeClass('fa-pause').addClass('fa-play');
+			this.isPlaying = !this.isPlaying;
+		}
+	};
+
+	this.volumeControl = function(index, sw){
+		//sw=0 0.1 down
+		//sw=1 0.1 up
+		if(sw){
+			if(document.getElementById('track-'+index).volume < 1){
+				document.getElementById('track-'+index).volume += 0.1;
+			}
+		}else{
+			if(document.getElementById('track-'+index).volume > 0){
+				document.getElementById('track-'+index).volume -= 0.1;
+			}
+		}
+	};
+
+	this.getPreviewUrl = function(url){
+		if(url === ""){
+			return null;
+		}else{
+			return $sce.trustAsResourceUrl(url);
+		}
+	};
+}]);
+
 //factories
 
-app.factory('tracksService', function($http, $q){
+app.factory('tracksService', ['$http', '$q', function($http, $q){
 	return {
 		getTracks(userId, playlistId, length, token){
 			var promises = [];
@@ -374,4 +531,4 @@ app.factory('tracksService', function($http, $q){
 			return $q.all(promises);
 		}
 	};
-});
+}]);

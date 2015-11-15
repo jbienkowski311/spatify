@@ -9,7 +9,7 @@
 					<h4 id="" class="playlist-name" tooltip-placement="top" uib-tooltip="{{related.name}}">
 						{{related.name | limitTo: 20}}{{related.name.length > 20 ? '&hellip;' : ''}}
 					</h4>
-					<img class="img-thumbnail" ng-src="{{related.images.length > 0 ? related.images[0].url : 'http://placehold.it/75x75'}}" style="width: 75px; height: 75px;" />
+					<img class="img-responsive img-thumbnail" ng-src="{{related.images.length > 0 ? related.images[0].url : 'http://placehold.it/75x75'}}" style="width: 75px; height: 75px;" />
 				</a>
 				<hr />
 				Popularity:
@@ -27,10 +27,14 @@
 	</div>
 </script>
 
+<script type="text/ng-template" id="albumInfoTooltip.html">
+
+</script>
+
 <div class="row">
 	<div class="col-md-12">
 		<div class="col-md-3">
-			<img class="img-thumbnail" ng-src="{{artist.images.length > 0 ? artist.images[0].url : 'http://placehold.it/300x300'}}" />
+			<img class="img-responsive img-thumbnail" ng-src="{{artist.images.length > 0 ? artist.images[0].url : 'http://placehold.it/300x300'}}" />
 		</div>
 		<div class="col-md-9">
 			<h3>{{artist.name}}</h3>
@@ -43,7 +47,77 @@
 				</div>
 			</div>
 			<br />
-			<p><a class="btn btn-success btn-lg" href="{{artist.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{artist.external_urls.spotify}}" target="_blank">Open with Spotify Open</a>&nbsp;<button type="button" class="btn btn-primary btn-lg" ng-click="open()" tooltip-placement="top" uib-tooltip="Click to show {{artist.name}}'s Related Artists">Related Artists</button></p>
+			<p><a class="btn btn-success btn-lg" href="{{artist.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{artist.external_urls.spotify}}" target="_blank">Open with Spotify Open</a>&nbsp;<button ng-if="relatedArtists.artists.length > 0" type="button" class="btn btn-primary btn-lg" ng-click="open()" tooltip-placement="top" uib-tooltip="Click to show {{artist.name}}'s Related Artists">Related Artists</button></p>
+		</div>
+	</div>
+	<div class="col-md-12" style="padding-top: 15px;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">{{artist.name}}'s Top Tracks</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table">
+					<thead>
+						<tr>
+							<th class="text-center" width="2%">Select</th>
+							<th width="40%">Song</th>
+							<th width="30%">Album</th>
+							<th width="20%">Popularity</th>
+							<th class="text-center" width="8%">Preview</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="track in topTracks.tracks">
+							<td class="text-center"><input type="checkbox" /></td>
+							<td><a ui-sref="track({trackId: track.id})">{{track.name}}</a></td>
+							<td><a ui-sref="album({albumId: track.album.id})" href tooltip-placement="top" uib-tooltip-html="topTracksAlbumsInfo[$index]" tooltip-class="track-info">{{track.album.name}}</a></td>
+							<td>
+								<div class="progress custom-progress-search">
+									<div class="progress-bar" role="progressbar" aria-valuenow="{{track.popularity}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{track.popularity}}%;">
+										{{track.popularity}}%
+									</div>
+								</div>
+							</td>
+							<td class="text-center">
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl($index,0)">
+									<i class="fa fa-minus fa-lg"></i>
+								</a>
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="playPreview($index)">
+									<i id="controls-{{$index}}" class="fa fa-play fa-lg"></i>
+								</a>
+								<a href ng-if="getPreviewUrl(track.preview_url) !== null" ng-click="volumeControl($index,1)">
+									<i class="fa fa-plus fa-lg"></i>
+								</a>
+								<i ng-if="getPreviewUrl(track.preview_url) === null" id="controls-{{$index}}" class="fa fa-times fa-lg"></i>
+								<audio ng-if="getPreviewUrl(track.preview_url) !== null" id="track-{{$index}}" ng-src="{{getPreviewUrl(track.preview_url)}}"></audio>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-12" style="padding-top: 15px;">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">{{artist.name}}'s Albums</h3>
+			</div>
+			<div class="panel-body">
+				<div class="col-md-12">
+					<div class="col-md-4 text-center" ng-repeat="album in albums.items">
+						<div class="playlist-card">
+							<a ui-sref="album({albumId: album.id})" href>
+								<h4 class="playlist-name" tooltip-placement="top" uib-tooltip="{{album.name}}">
+									{{album.name | limitTo: 32}}{{album.name.length > 32 ? '&hellip;' : ''}}
+								</h4>
+								<img class="img-thumbnail" ng-src="{{album.images.length > 0 ? album.images[0].url : 'http://placehold.it/100x100'}}" style="width: 100px; height: 100px;" />
+							</a>
+							<hr />
+							<a class="btn btn-success" href="{{album.uri}}">Open on Spotify</a>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
