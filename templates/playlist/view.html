@@ -1,0 +1,58 @@
+<div class="row">
+	<div class="col-md-3">
+		<img class="img-thumbnail" ng-src="{{playlist.images[0].url.length > 32 ? playlist.images[0].url : 'http://placehold.it/300x300'}}" />
+	</div>
+	<div class="col-md-9">
+		<h3>{{playlist.name}}</h3>
+		<h4>by <a href="{{owner.external_urls.spotify}}" target="_blank">{{owner.display_name.length > 0 ? owner.display_name : owner.id}}</a></h4>
+		<hr />
+		<p>Public: <i class="fa fa-{{playlist.public ? 'check-square-o' : 'square-o'}} fa-lg"></i></p>
+		<p>Collaborative: <i class="fa fa-{{playlist.collaborative ? 'check-square-o' : 'square-o'}} fa-lg"></i></p>
+		<p>{{playlist.tracks.total}} songs</p>
+		<p><a class="btn btn-success btn-lg" href="{{playlist.uri}}">Play on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{playlist.external_urls.spotify}}" target="_blank">Open with Spotify Open</a>
+	</div>
+	<div class="col-md-12">
+		<table class="table">
+			<thead>
+				<tr>
+					<th class="text-center" width="2%">Select</th>
+					<th width="40%">Song</th>
+					<th width="30%">Artist</th>
+					<th width="20%">Added</th>
+					<th class="text-center" width="8%">Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr id="loading">
+					<td colspan="100%" class="text-center"><i class="fa fa-refresh fa-spin fa-3x"></i></td>
+				</tr>
+				<tr ng-repeat="track in filteredTracks.items">
+					<td class="text-center"><input type="checkbox" /></td>
+					<td><a href="{{track.track.uri}}">{{track.track.name}}</a></td>
+					<td>
+						<span ng-repeat="artist in track.track.artists">
+							<a href="{{artist.uri}}">{{artist.name}}</a>{{($index+1) != track.track.artists.length ? ', ' : ''}}
+						</span>
+					</td>
+					<td>{{track.added_at | date: 'dd MMM yyyy - HH:mm'}}</td>
+					<td class="text-center">
+						<a href ng-if="getPreviewUrl($index) !== null" ng-click="volumeControl($index,0)">
+							<i class="fa fa-minus fa-lg"></i>
+						</a>
+						<a href ng-if="getPreviewUrl($index) !== null" ng-click="playPreview($index)">
+							<i id="controls-{{$index}}" class="fa fa-play fa-lg"></i>
+						</a>
+						<a href ng-if="getPreviewUrl($index) !== null" ng-click="volumeControl($index,1)">
+							<i class="fa fa-plus fa-lg"></i>
+						</a>
+						<i ng-if="getPreviewUrl($index) === null" id="controls-{{$index}}" class="fa fa-times fa-lg"></i>
+						<audio ng-if="getPreviewUrl($index) !== null" id="track-{{$index}}" ng-src="{{getPreviewUrl($index)}}"></audio>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<div class="text-center">
+			<uib-pagination total-items="playlist.tracks.total" ng-model="currentPage" max-size="10" items-per-page="100" class="pagination-lg" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;" boundary-links="true"></uib-pagination>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,49 @@
+<script type="text/ng-template" id="relatedArtistsModal.html">
+	<div class="modal-title">
+		<h3 class="modal-title"></h3>
+	</div>
+	<div class="modal-body col-md-12">
+		<div class="col-md-3 text-center" ng-repeat="related in relatedArtists.artists">
+			<div class="playlist-card">
+				<a ui-sref="artist({artistId: related.id})" href>
+					<h4 id="" class="playlist-name" tooltip-placement="top" uib-tooltip="{{related.name}}">
+						{{related.name | limitTo: 20}}{{related.name.length > 20 ? '&hellip;' : ''}}
+					</h4>
+					<img class="img-thumbnail" ng-src="{{related.images.length > 0 ? related.images[0].url : 'http://placehold.it/75x75'}}" style="width: 75px; height: 75px;" />
+				</a>
+				<hr />
+				Popularity:
+				<div class="progress custom-progress">
+					<div class="progress-bar" role="progressbar" aria-valuenow="{{related.popularity}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{related.popularity}}%;">
+						{{related.popularity}}%
+					</div>
+				</div>
+				<a class="btn btn-success" href="{{related.uri}}">Open on Spotify</a>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-danger" type="button" ng-click="ok()">Close</button>
+	</div>
+</script>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="col-md-3">
+			<img class="img-thumbnail" ng-src="{{artist.images.length > 0 ? artist.images[0].url : 'http://placehold.it/300x300'}}" />
+		</div>
+		<div class="col-md-9">
+			<h3>{{artist.name}}</h3>
+			<hr />
+			<p>Followers: {{artist.followers.total}}</p>
+			<p>Popularity:</p>
+			<div class="progress custom-progress">
+				<div class="progress-bar" role="progressbar" aria-valuenow="{{artist.popularity}}" aria-valuemin="0" aria-valuemax="100" style="min-width: 2em; width: {{artist.popularity}}%;">
+					{{artist.popularity}}%
+				</div>
+			</div>
+			<br />
+			<p><a class="btn btn-success btn-lg" href="{{artist.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{artist.external_urls.spotify}}" target="_blank">Open with Spotify Open</a>&nbsp;<button type="button" class="btn btn-primary btn-lg" ng-click="open()" tooltip-placement="top" uib-tooltip="Click to show {{artist.name}}'s Related Artists">Related Artists</button></p>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,16 @@
+<div class="row" ng-if="isLogged">
+	<div class="col-md-12">
+		<div class="col-md-3">
+			<img class="img-thumbnail" ng-src="{{userData.images.length > 0 ? userData.images[0].url : 'http://placehold.it/300x300'}}" width="300px" height="300px" />
+		</div>
+		<div class="col-md-9">
+			<h3>{{userData.display_name.length > 0 ? userData.display_name : userData.id}}</h3>
+			<hr />
+			<p>Email: {{userData.email}}</p>
+			<p>Subcription: {{userData.product}}</p>
+			<p>Followers: {{userData.followers.total}}</p>
+			<br />
+			<p><a class="btn btn-success btn-lg" href="{{userData.uri}}">Open on Spotify</a>&nbsp;<a class="btn btn-success btn-lg" href="{{userData.external_urls.spotify}}" target="_blank">Open with Spotify Open</a></p>
+		</div>
+	</div>
+</div>
