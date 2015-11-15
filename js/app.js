@@ -10,7 +10,7 @@ app.config(['$stateProvider', '$urlRouterProvider', '$compileProvider', 'Spotify
 	$compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|chrome-extension|spotify):/);
 
 	SpotifyProvider.setClientId('e31281fecafe435dae4d885c301de581');
-	SpotifyProvider.setRedirectUri('http://localhost/spotify1/signin.html');
+	SpotifyProvider.setRedirectUri('http://jbienkowski311.github.io/spatify/signin.html');
 	SpotifyProvider.setScope('user-read-email user-read-private playlist-read-private playlist-modify-private playlist-modify-public user-library-read user-library-modify');
 	if($cookies.get('spotify-token') != 'undefined'){
 		SpotifyProvider.setAuthToken($cookies.get('spotify-token'));
