@@ -5,7 +5,7 @@
 	<div class="modal-body col-md-12">
 		<div class="col-md-3 text-center" ng-repeat="related in relatedArtists.artists">
 			<div class="playlist-card">
-				<a ui-sref="artist({artistId: related.id})" href>
+				<a ui-sref="artist({artistId: related.id})" href ng-click="ok()">
 					<h4 id="" class="playlist-name" tooltip-placement="top" uib-tooltip="{{related.name}}">
 						{{related.name | limitTo: 20}}{{related.name.length > 20 ? '&hellip;' : ''}}
 					</h4>
