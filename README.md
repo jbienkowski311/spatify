@@ -20,8 +20,7 @@ Spotify Playlist Assistant or SPAtify as I used to call it, is a little project 
 
 ## Resources used
 This project would never be done without these resources:
-```
-```
+
 1. [AngularJS](https://github.com/angular/angular.js)
 2. [Bootstrap](http://getbootstrap.com/)
 3. [Angular Spotify](https://github.com/eddiemoore/angular-spotify) by [eddiemoore](https://github.com/eddiemoore)
