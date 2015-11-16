@@ -14,12 +14,12 @@ Because ASCII ART is awesome, that's why :)
 Side project called Spotify Playlist Assistant made in Angular.
 
 ## Project description
-Spotify Playlist Assistant or SPAtify as I used to call it, is a little project that has two purposes.
+Spotify Playlist Assistant or SPAtify as I used to call it, is a little project that have two purposes.
 * Number one - display all the data that is available to the user via Spotify API.
 * Number two - help user to create playlists faster. Using something I called Music Box, you first add all the tracks you want to the Music Box and then select your existing playlist or create a new one. Here comes the best part about this feature - you want to add whole album? No problem. Combine your playlist with another one? No problem as well.
 
 ## Resources used
-This project would never be done without these resources:
+This project would have never be done without these resources:
 
 1. [AngularJS](https://github.com/angular/angular.js)
 2. [Bootstrap](http://getbootstrap.com/)
